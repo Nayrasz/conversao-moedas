@@ -44,8 +44,8 @@ git --version
 1. Clone o repositorio:
 
 ```bash
-git clone <[url-do-repositorio](https://github.com/Nayrasz/conversao-moedas)>
-cd conversor-moedas-api
+git clone https://github.com/Nayrasz/conversao-moedas
+cd conversor-moedas
 ```
 
 2. Instale as dependencias:
