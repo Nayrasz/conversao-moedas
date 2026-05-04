@@ -9,7 +9,7 @@
 
 ## Descricao do Projeto
 
-Este projeto contem uma API REST para conversao de moedas e consulta de cotacoes, acompanhada por uma suite automatizada de testes de API. A aplicacao valida entradas monetarias, calcula conversoes entre moedas suportadas e expoe metadados de cotacao, como taxa utilizada, data/hora e fonte.
+Este projeto contem uma API REST para conversao de moedas e consulta de cotacoes, acompanhada por uma suite automatizada de testes de API. A aplicacao valida entradas monetarias, calcula conversoes entre moedas suportadas.
 
 O objetivo da suite de testes e garantir precisao financeira, consistencia contratual e resiliencia operacional. Os testes cobrem desde validacao de payloads e regras de conversao ate cenarios de indisponibilidade do provedor de cotacoes e limites de tempo de resposta.
 
