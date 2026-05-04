@@ -1,0 +1,24 @@
+{
+  "name": "conversor-moedas-api",
+  "version": "1.0.0",
+  "description": "API REST para conversao de moedas com documentacao Swagger.",
+  "main": "scr/app.js",
+  "scripts": {
+    "start": "node scr/app.js",
+    "dev": "node scr/app.js",
+    "test": "mocha \"test/**/*.test.mjs\" --reporter mochawesome --reporter-options reportDir=mochawesome-report,reportFilename=index,quiet=true,overwrite=true",
+    "test:functional": "mocha \"test/functional.test.mjs\" --reporter spec",
+    "test:business": "mocha \"test/business.test.mjs\" --reporter spec",
+    "test:performance": "mocha \"test/performance.test.mjs\" --reporter spec"
+  },
+  "dependencies": {
+    "express": "^4.18.3",
+    "swagger-ui-express": "^5.0.0"
+  },
+  "devDependencies": {
+    "chai": "^6.2.2",
+    "mocha": "^11.7.5",
+    "mochawesome": "^7.1.4",
+    "supertest": "^7.2.2"
+  }
+}

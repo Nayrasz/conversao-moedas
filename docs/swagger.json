@@ -1,0 +1,778 @@
+{
+  "openapi": "3.0.3",
+  "info": {
+    "title": "API Conversor de Moedas",
+    "version": "1.0.0",
+    "description": "API REST para consulta de cotacoes diarias e conversao de valores entre Real (BRL), Dolar Americano (USD), Euro (EUR) e Iene Japones (JPY). A API permite listar moedas suportadas, consultar cotacoes atuais e converter um valor de uma moeda de origem para uma moeda de destino."
+  },
+  "servers": [
+    {
+      "url": "http://localhost:8000",
+      "description": "Servidor local de desenvolvimento"
+    }
+  ],
+  "tags": [
+    {
+      "name": "Moedas",
+      "description": "Operacoes relacionadas as moedas suportadas pela aplicacao."
+    },
+    {
+      "name": "Cotacoes",
+      "description": "Consulta de cotacoes diarias utilizadas nas conversoes."
+    },
+    {
+      "name": "Conversoes",
+      "description": "Operacoes para conversao de valores entre moedas."
+    },
+    {
+      "name": "Sistema",
+      "description": "Endpoints auxiliares para verificacao da disponibilidade da API."
+    }
+  ],
+  "paths": {
+    "/moedas": {
+      "get": {
+        "tags": [
+          "Moedas"
+        ],
+        "summary": "Lista as moedas suportadas",
+        "description": "Retorna a lista de moedas aceitas pela API para consulta de cotacoes e realizacao de conversoes.",
+        "operationId": "listarMoedas",
+        "responses": {
+          "200": {
+            "description": "Moedas suportadas retornadas com sucesso.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RespostaMoedas"
+                },
+                "examples": {
+                  "sucesso": {
+                    "summary": "Lista de moedas suportadas",
+                    "value": {
+                      "moedas": [
+                        {
+                          "codigo": "BRL",
+                          "nome": "Real brasileiro",
+                          "simbolo": "R$",
+                          "casasDecimais": 2
+                        },
+                        {
+                          "codigo": "USD",
+                          "nome": "Dolar americano",
+                          "simbolo": "$",
+                          "casasDecimais": 2
+                        },
+                        {
+                          "codigo": "EUR",
+                          "nome": "Euro",
+                          "simbolo": "€",
+                          "casasDecimais": 2
+                        },
+                        {
+                          "codigo": "JPY",
+                          "nome": "Iene japones",
+                          "simbolo": "¥",
+                          "casasDecimais": 0
+                        }
+                      ]
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "500": {
+            "$ref": "#/components/responses/ErroInterno"
+          }
+        }
+      }
+    },
+    "/cotacoes": {
+      "get": {
+        "tags": [
+          "Cotacoes"
+        ],
+        "summary": "Obtem as cotacoes atuais",
+        "description": "Retorna as cotacoes diarias atuais de todas as moedas suportadas ou filtra por uma moeda de origem e/ou uma moeda de destino. As taxas representam quanto vale 1 unidade da moeda de origem na moeda de destino.",
+        "operationId": "obterCotacoes",
+        "parameters": [
+          {
+            "name": "moedaOrigem",
+            "in": "query",
+            "required": false,
+            "description": "Codigo ISO 4217 da moeda de origem usada para filtrar as cotacoes.",
+            "schema": {
+              "$ref": "#/components/schemas/CodigoMoeda"
+            },
+            "example": "BRL"
+          },
+          {
+            "name": "moedaDestino",
+            "in": "query",
+            "required": false,
+            "description": "Codigo ISO 4217 da moeda de destino usada para filtrar as cotacoes.",
+            "schema": {
+              "$ref": "#/components/schemas/CodigoMoeda"
+            },
+            "example": "USD"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Cotacoes retornadas com sucesso.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RespostaCotacoes"
+                },
+                "examples": {
+                  "todasAsCotacoes": {
+                    "summary": "Cotacoes atuais para varias moedas",
+                    "value": {
+                      "dataReferencia": "2026-05-03",
+                      "moedaBasePadrao": "BRL",
+                      "cotacoes": [
+                        {
+                          "moedaOrigem": "BRL",
+                          "moedaDestino": "USD",
+                          "taxa": 0.1961,
+                          "dataHoraCotacao": "2026-05-03T15:00:00-03:00",
+                          "fonte": "Fornecedor de cotacoes"
+                        },
+                        {
+                          "moedaOrigem": "BRL",
+                          "moedaDestino": "EUR",
+                          "taxa": 0.1818,
+                          "dataHoraCotacao": "2026-05-03T15:00:00-03:00",
+                          "fonte": "Fornecedor de cotacoes"
+                        },
+                        {
+                          "moedaOrigem": "BRL",
+                          "moedaDestino": "JPY",
+                          "taxa": 30.82,
+                          "dataHoraCotacao": "2026-05-03T15:00:00-03:00",
+                          "fonte": "Fornecedor de cotacoes"
+                        }
+                      ]
+                    }
+                  },
+                  "cotacaoEspecifica": {
+                    "summary": "Cotacao filtrada por origem e destino",
+                    "value": {
+                      "dataReferencia": "2026-05-03",
+                      "moedaBasePadrao": "BRL",
+                      "cotacoes": [
+                        {
+                          "moedaOrigem": "BRL",
+                          "moedaDestino": "USD",
+                          "taxa": 0.1961,
+                          "dataHoraCotacao": "2026-05-03T15:00:00-03:00",
+                          "fonte": "Fornecedor de cotacoes"
+                        }
+                      ]
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/ErroRequisicaoInvalida"
+          },
+          "404": {
+            "$ref": "#/components/responses/ErroNaoEncontrado"
+          },
+          "500": {
+            "$ref": "#/components/responses/ErroInterno"
+          }
+        }
+      }
+    },
+    "/cotacoes/{moedaOrigem}/{moedaDestino}": {
+      "get": {
+        "tags": [
+          "Cotacoes"
+        ],
+        "summary": "Obtem a cotacao entre duas moedas",
+        "description": "Retorna a cotacao atual entre uma moeda de origem e uma moeda de destino especificas. Use este endpoint quando a interface precisar exibir apenas uma taxa de conversao.",
+        "operationId": "obterCotacaoPorPar",
+        "parameters": [
+          {
+            "name": "moedaOrigem",
+            "in": "path",
+            "required": true,
+            "description": "Codigo ISO 4217 da moeda de origem.",
+            "schema": {
+              "$ref": "#/components/schemas/CodigoMoeda"
+            },
+            "example": "USD"
+          },
+          {
+            "name": "moedaDestino",
+            "in": "path",
+            "required": true,
+            "description": "Codigo ISO 4217 da moeda de destino.",
+            "schema": {
+              "$ref": "#/components/schemas/CodigoMoeda"
+            },
+            "example": "BRL"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Cotacao retornada com sucesso.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Cotacao"
+                },
+                "examples": {
+                  "sucesso": {
+                    "summary": "Cotacao do par USD/BRL",
+                    "value": {
+                      "moedaOrigem": "USD",
+                      "moedaDestino": "BRL",
+                      "taxa": 5.0994,
+                      "dataHoraCotacao": "2026-05-03T15:00:00-03:00",
+                      "fonte": "Fornecedor de cotacoes"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/ErroRequisicaoInvalida"
+          },
+          "404": {
+            "$ref": "#/components/responses/ErroNaoEncontrado"
+          },
+          "500": {
+            "$ref": "#/components/responses/ErroInterno"
+          }
+        }
+      }
+    },
+    "/conversoes": {
+      "post": {
+        "tags": [
+          "Conversoes"
+        ],
+        "summary": "Realiza a conversao de moeda",
+        "description": "Converte um valor positivo de uma moeda de origem para uma moeda de destino usando a cotacao diaria atual. A moeda de origem e a moeda de destino devem ser diferentes e pertencer ao conjunto de moedas suportadas.",
+        "operationId": "converterMoeda",
+        "requestBody": {
+          "required": true,
+          "description": "Dados necessarios para executar a conversao.",
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RequisicaoConversao"
+              },
+              "examples": {
+                "converterBrlParaUsd": {
+                  "summary": "Converter Real para Dolar",
+                  "value": {
+                    "valor": 250.75,
+                    "moedaOrigem": "BRL",
+                    "moedaDestino": "USD"
+                  }
+                },
+                "converterEurParaJpy": {
+                  "summary": "Converter Euro para Iene",
+                  "value": {
+                    "valor": 100,
+                    "moedaOrigem": "EUR",
+                    "moedaDestino": "JPY"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Conversao realizada com sucesso.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RespostaConversao"
+                },
+                "examples": {
+                  "sucesso": {
+                    "summary": "Resultado da conversao",
+                    "value": {
+                      "valorOriginal": 250.75,
+                      "moedaOrigem": "BRL",
+                      "moedaDestino": "USD",
+                      "cotacaoUtilizada": 0.1961,
+                      "valorConvertido": 49.17,
+                      "dataHoraCotacao": "2026-05-03T15:00:00-03:00",
+                      "dataHoraConversao": "2026-05-03T15:02:10-03:00"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/ErroRequisicaoInvalida"
+          },
+          "404": {
+            "$ref": "#/components/responses/ErroNaoEncontrado"
+          },
+          "422": {
+            "$ref": "#/components/responses/ErroValidacao"
+          },
+          "500": {
+            "$ref": "#/components/responses/ErroInterno"
+          }
+        }
+      }
+    },
+    "/health": {
+      "get": {
+        "tags": [
+          "Sistema"
+        ],
+        "summary": "Verifica a disponibilidade da API",
+        "description": "Endpoint auxiliar para confirmar se a API esta ativa e pronta para receber requisicoes.",
+        "operationId": "verificarSaude",
+        "responses": {
+          "200": {
+            "description": "API disponivel.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RespostaSaude"
+                },
+                "examples": {
+                  "sucesso": {
+                    "summary": "API saudavel",
+                    "value": {
+                      "status": "ok",
+                      "versao": "1.0.0",
+                      "dataHora": "2026-05-03T15:05:00-03:00"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "500": {
+            "$ref": "#/components/responses/ErroInterno"
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "CodigoMoeda": {
+        "type": "string",
+        "description": "Codigo ISO 4217 da moeda. Valores aceitos: BRL, USD, EUR e JPY.",
+        "enum": [
+          "BRL",
+          "USD",
+          "EUR",
+          "JPY"
+        ],
+        "example": "BRL"
+      },
+      "Moeda": {
+        "type": "object",
+        "description": "Representa uma moeda suportada pela aplicacao.",
+        "required": [
+          "codigo",
+          "nome",
+          "simbolo",
+          "casasDecimais"
+        ],
+        "properties": {
+          "codigo": {
+            "$ref": "#/components/schemas/CodigoMoeda"
+          },
+          "nome": {
+            "type": "string",
+            "description": "Nome da moeda em portugues.",
+            "example": "Real brasileiro"
+          },
+          "simbolo": {
+            "type": "string",
+            "description": "Simbolo monetario usado para apresentacao.",
+            "example": "R$"
+          },
+          "casasDecimais": {
+            "type": "integer",
+            "description": "Quantidade recomendada de casas decimais para exibicao de valores nessa moeda.",
+            "minimum": 0,
+            "maximum": 4,
+            "example": 2
+          }
+        }
+      },
+      "RespostaMoedas": {
+        "type": "object",
+        "description": "Resposta da listagem de moedas suportadas.",
+        "required": [
+          "moedas"
+        ],
+        "properties": {
+          "moedas": {
+            "type": "array",
+            "description": "Lista de moedas aceitas pela API.",
+            "minItems": 1,
+            "items": {
+              "$ref": "#/components/schemas/Moeda"
+            }
+          }
+        }
+      },
+      "Cotacao": {
+        "type": "object",
+        "description": "Cotacao vigente para um par de moedas.",
+        "required": [
+          "moedaOrigem",
+          "moedaDestino",
+          "taxa",
+          "dataHoraCotacao"
+        ],
+        "properties": {
+          "moedaOrigem": {
+            "$ref": "#/components/schemas/CodigoMoeda"
+          },
+          "moedaDestino": {
+            "$ref": "#/components/schemas/CodigoMoeda"
+          },
+          "taxa": {
+            "type": "number",
+            "format": "double",
+            "description": "Taxa utilizada na conversao. Representa quanto vale 1 unidade da moeda de origem na moeda de destino.",
+            "exclusiveMinimum": true,
+            "minimum": 0,
+            "example": 5.0994
+          },
+          "dataHoraCotacao": {
+            "type": "string",
+            "format": "date-time",
+            "description": "Data e hora em que a cotacao foi obtida ou atualizada.",
+            "example": "2026-05-03T15:00:00-03:00"
+          },
+          "fonte": {
+            "type": "string",
+            "description": "Nome da fonte ou provedor usado para obter a cotacao.",
+            "example": "Fornecedor de cotacoes"
+          }
+        }
+      },
+      "RespostaCotacoes": {
+        "type": "object",
+        "description": "Resposta da consulta de cotacoes atuais.",
+        "required": [
+          "dataReferencia",
+          "moedaBasePadrao",
+          "cotacoes"
+        ],
+        "properties": {
+          "dataReferencia": {
+            "type": "string",
+            "format": "date",
+            "description": "Data de referencia das cotacoes retornadas.",
+            "example": "2026-05-03"
+          },
+          "moedaBasePadrao": {
+            "$ref": "#/components/schemas/CodigoMoeda"
+          },
+          "cotacoes": {
+            "type": "array",
+            "description": "Lista de cotacoes disponiveis conforme os filtros informados.",
+            "items": {
+              "$ref": "#/components/schemas/Cotacao"
+            }
+          }
+        }
+      },
+      "RequisicaoConversao": {
+        "type": "object",
+        "description": "Dados enviados pelo cliente para converter um valor entre moedas.",
+        "required": [
+          "valor",
+          "moedaOrigem",
+          "moedaDestino"
+        ],
+        "properties": {
+          "valor": {
+            "type": "number",
+            "format": "double",
+            "description": "Valor monetario positivo que sera convertido.",
+            "exclusiveMinimum": true,
+            "minimum": 0,
+            "example": 250.75
+          },
+          "moedaOrigem": {
+            "$ref": "#/components/schemas/CodigoMoeda"
+          },
+          "moedaDestino": {
+            "$ref": "#/components/schemas/CodigoMoeda"
+          }
+        }
+      },
+      "RespostaConversao": {
+        "type": "object",
+        "description": "Resultado de uma conversao de moeda.",
+        "required": [
+          "valorOriginal",
+          "moedaOrigem",
+          "moedaDestino",
+          "cotacaoUtilizada",
+          "valorConvertido",
+          "dataHoraCotacao",
+          "dataHoraConversao"
+        ],
+        "properties": {
+          "valorOriginal": {
+            "type": "number",
+            "format": "double",
+            "description": "Valor informado originalmente para conversao.",
+            "example": 250.75
+          },
+          "moedaOrigem": {
+            "$ref": "#/components/schemas/CodigoMoeda"
+          },
+          "moedaDestino": {
+            "$ref": "#/components/schemas/CodigoMoeda"
+          },
+          "cotacaoUtilizada": {
+            "type": "number",
+            "format": "double",
+            "description": "Cotacao aplicada no calculo da conversao.",
+            "exclusiveMinimum": true,
+            "minimum": 0,
+            "example": 0.1961
+          },
+          "valorConvertido": {
+            "type": "number",
+            "format": "double",
+            "description": "Resultado da conversao arredondado conforme a moeda de destino.",
+            "example": 49.17
+          },
+          "dataHoraCotacao": {
+            "type": "string",
+            "format": "date-time",
+            "description": "Data e hora da cotacao utilizada.",
+            "example": "2026-05-03T15:00:00-03:00"
+          },
+          "dataHoraConversao": {
+            "type": "string",
+            "format": "date-time",
+            "description": "Data e hora em que a conversao foi processada pela API.",
+            "example": "2026-05-03T15:02:10-03:00"
+          }
+        }
+      },
+      "RespostaSaude": {
+        "type": "object",
+        "description": "Informacoes basicas sobre a disponibilidade da API.",
+        "required": [
+          "status",
+          "versao",
+          "dataHora"
+        ],
+        "properties": {
+          "status": {
+            "type": "string",
+            "description": "Estado atual da API.",
+            "enum": [
+              "ok"
+            ],
+            "example": "ok"
+          },
+          "versao": {
+            "type": "string",
+            "description": "Versao atual da API.",
+            "example": "1.0.0"
+          },
+          "dataHora": {
+            "type": "string",
+            "format": "date-time",
+            "description": "Data e hora da verificacao de saude.",
+            "example": "2026-05-03T15:05:00-03:00"
+          }
+        }
+      },
+      "Erro": {
+        "type": "object",
+        "description": "Estrutura padronizada para respostas de erro.",
+        "required": [
+          "codigo",
+          "mensagem",
+          "dataHora"
+        ],
+        "properties": {
+          "codigo": {
+            "type": "string",
+            "description": "Codigo interno e estavel que identifica o tipo do erro.",
+            "example": "MOEDA_INVALIDA"
+          },
+          "mensagem": {
+            "type": "string",
+            "description": "Mensagem legivel descrevendo o erro.",
+            "example": "A moeda informada nao e suportada pela API."
+          },
+          "detalhes": {
+            "type": "array",
+            "description": "Lista opcional com detalhes adicionais sobre campos invalidos ou regras violadas.",
+            "items": {
+              "type": "object",
+              "required": [
+                "campo",
+                "mensagem"
+              ],
+              "properties": {
+                "campo": {
+                  "type": "string",
+                  "description": "Nome do campo relacionado ao erro.",
+                  "example": "moedaOrigem"
+                },
+                "mensagem": {
+                  "type": "string",
+                  "description": "Descricao especifica do problema encontrado no campo.",
+                  "example": "Use uma das moedas permitidas: BRL, USD, EUR ou JPY."
+                }
+              }
+            }
+          },
+          "dataHora": {
+            "type": "string",
+            "format": "date-time",
+            "description": "Data e hora em que o erro ocorreu.",
+            "example": "2026-05-03T15:03:00-03:00"
+          }
+        }
+      }
+    },
+    "responses": {
+      "ErroRequisicaoInvalida": {
+        "description": "A requisicao possui parametros, corpo ou formato invalido.",
+        "content": {
+          "application/json": {
+            "schema": {
+              "$ref": "#/components/schemas/Erro"
+            },
+            "examples": {
+              "moedaInvalida": {
+                "summary": "Moeda nao suportada",
+                "value": {
+                  "codigo": "MOEDA_INVALIDA",
+                  "mensagem": "A moeda informada nao e suportada pela API.",
+                  "detalhes": [
+                    {
+                      "campo": "moedaOrigem",
+                      "mensagem": "Use uma das moedas permitidas: BRL, USD, EUR ou JPY."
+                    }
+                  ],
+                  "dataHora": "2026-05-03T15:03:00-03:00"
+                }
+              },
+              "corpoInvalido": {
+                "summary": "Corpo da requisicao invalido",
+                "value": {
+                  "codigo": "CORPO_REQUISICAO_INVALIDO",
+                  "mensagem": "O corpo da requisicao deve ser um JSON valido.",
+                  "dataHora": "2026-05-03T15:03:00-03:00"
+                }
+              }
+            }
+          }
+        }
+      },
+      "ErroNaoEncontrado": {
+        "description": "O recurso solicitado nao foi encontrado.",
+        "content": {
+          "application/json": {
+            "schema": {
+              "$ref": "#/components/schemas/Erro"
+            },
+            "examples": {
+              "cotacaoNaoEncontrada": {
+                "summary": "Cotacao nao encontrada",
+                "value": {
+                  "codigo": "COTACAO_NAO_ENCONTRADA",
+                  "mensagem": "Nao foi encontrada cotacao disponivel para o par de moedas informado.",
+                  "detalhes": [
+                    {
+                      "campo": "moedaDestino",
+                      "mensagem": "Verifique se existe cotacao disponivel para a moeda de destino informada."
+                    }
+                  ],
+                  "dataHora": "2026-05-03T15:04:00-03:00"
+                }
+              }
+            }
+          }
+        }
+      },
+      "ErroValidacao": {
+        "description": "A requisicao foi compreendida, mas viola uma ou mais regras de negocio.",
+        "content": {
+          "application/json": {
+            "schema": {
+              "$ref": "#/components/schemas/Erro"
+            },
+            "examples": {
+              "valorNaoPositivo": {
+                "summary": "Valor menor ou igual a zero",
+                "value": {
+                  "codigo": "VALOR_INVALIDO",
+                  "mensagem": "O valor a converter deve ser maior que zero.",
+                  "detalhes": [
+                    {
+                      "campo": "valor",
+                      "mensagem": "Informe um numero positivo."
+                    }
+                  ],
+                  "dataHora": "2026-05-03T15:03:30-03:00"
+                }
+              },
+              "moedasIguais": {
+                "summary": "Moeda de origem igual a moeda de destino",
+                "value": {
+                  "codigo": "MOEDAS_IGUAIS",
+                  "mensagem": "A moeda de origem deve ser diferente da moeda de destino.",
+                  "detalhes": [
+                    {
+                      "campo": "moedaDestino",
+                      "mensagem": "Selecione uma moeda de destino diferente da moeda de origem."
+                    }
+                  ],
+                  "dataHora": "2026-05-03T15:03:30-03:00"
+                }
+              }
+            }
+          }
+        }
+      },
+      "ErroInterno": {
+        "description": "Erro interno inesperado ao processar a requisicao.",
+        "content": {
+          "application/json": {
+            "schema": {
+              "$ref": "#/components/schemas/Erro"
+            },
+            "examples": {
+              "erroInterno": {
+                "summary": "Falha inesperada",
+                "value": {
+                  "codigo": "ERRO_INTERNO",
+                  "mensagem": "Ocorreu um erro inesperado. Tente novamente mais tarde.",
+                  "dataHora": "2026-05-03T15:06:00-03:00"
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}
