@@ -44,7 +44,7 @@ git --version
 1. Clone o repositorio:
 
 ```bash
-git clone <url-do-repositorio>
+git clone <[url-do-repositorio](https://github.com/Nayrasz/conversao-moedas)>
 cd conversor-moedas-api
 ```
 
